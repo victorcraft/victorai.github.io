@@ -1,0 +1,44 @@
+const openai = require('openai');
+
+class Assistant {
+    constructor(api_key, model = "gpt-4") {
+        this.api_key = api_key;
+        this.model = model;
+        this.chat_log = [];
+    }
+
+    async chat(question) {
+        this.chat_log.push({ role: "user", content: question });
+        const response = await openai.ChatCompletion.create({
+            model: this.model,
+            messages: this.chat_log,
+            max_tokens: 100,
+            temperature: 0.7
+        });
+        this.chat_log.push({ role: "assistant", content: response.choices[0].message.content });
+        return response.choices[0].message.content;
+    }
+}
+
+async function main() {
+    // Set up the assistant
+    const api_key = "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";
+    openai.api_key = api_key;
+    const assistant = new Assistant(api_key);
+
+    // Start the conversation
+    console.log("Bonjour ! Comment puis-je vous aider ?");
+    while (true) {
+        const user_input = prompt("Vous: ");
+        if (user_input.toLowerCase() === 'exit') {
+            console.log("Au revoir !");
+            break;
+        }
+        const response = await assistant.chat(user_input);
+        // Replace newline characters with actual newlines
+        const formattedResponse = response.replace(/\\n/g, '\n');
+        console.log("Assistant:", formattedResponse);
+    }
+}
+
+main();
